@@ -117,8 +117,8 @@ let draw = (state, env) => {
       state.fruits,
     );
   let calcVY = r => {
-    let vy = -. Utils.randomf(~min=100., ~max=300.);
-    sin(r) > 0. ? -. vy : vy /. 100.;
+    let vy = Utils.randomf(~min=100., ~max=300.);
+    sin(r +. Constants.pi /. 2.) > 0. ? -. vy : vy;
   };
   let newHalves =
     List.flatten(
@@ -128,7 +128,7 @@ let draw = (state, env) => {
             x,
             y: y +. 5.,
             vx: Utils.randomf(~min=-30., ~max=30.),
-            vy: calcVY(r),
+            vy: -. calcVY(r),
             r,
             vr: 0.,
             img: state.orangeHalf1,
@@ -137,7 +137,7 @@ let draw = (state, env) => {
             x,
             y: y -. 5.,
             vx: Utils.randomf(~min=-30., ~max=50.),
-            vy: -. calcVY(r),
+            vy: calcVY(r),
             r,
             vr: 0.,
             img: state.orangeHalf2,
