@@ -1,4 +1,5 @@
 open Reprocessing;
+
 let g = 200.;
 let fruitSize = 64;
 let fruitSizef = 64.;
@@ -10,17 +11,19 @@ type objectT = {
   vy: float,
   r: float,
   vr: float,
-  img: imageT,
+  kind: string,
 };
+
+module AssetMap = Map.Make(String);
 
 type state = {
   fruits: list(objectT),
   halves: list(objectT),
   bg: imageT,
-  orange: imageT,
-  orangeHalf1: imageT,
-  orangeHalf2: imageT,
+  assetMap: AssetMap.t(imageT),
 };
+
+let possibleFruits = ["banana", "pineapple", "apple", "coconut", "orange"];
 
 let spawnFruit = state => {
   ...state,
@@ -32,7 +35,7 @@ let spawnFruit = state => {
       vr: Utils.randomf(~min=-5., ~max=5.),
       vx: Utils.randomf(~min=-100., ~max=100.),
       vy: (-400.) +. Utils.randomf(~min=-100., ~max=100.),
-      img: state.orange,
+      kind: List.nth(possibleFruits, Utils.random(~min=0, ~max=5)),
     },
     ...state.fruits,
   ],
@@ -51,21 +54,21 @@ let drawWithRotation = (img, ~pos as (x, y), ~height, ~width, ~rot, env) => {
   Draw.popMatrix(env);
 };
 
-let applyGravity = (dt, g, {x, y, r, vr, vx, vy, img}) => {
+let applyGravity = (dt, g, {x, y, r, vr, vx, vy, kind}) => {
   x: x +. dt *. vx,
   y: y +. dt *. vy,
   r: r +. dt *. vr,
   vr,
   vy: vy +. dt *. g,
   vx,
-  img,
+  kind,
 };
 
-let drawObjectList = (l, env) =>
+let drawObjectList = (l, assetMap, env) =>
   List.iter(
-    ({x, y, r, img}) =>
+    ({x, y, r, kind}) =>
       drawWithRotation(
-        img,
+        AssetMap.find(kind, assetMap),
         ~pos=(x, y),
         ~width=fruitSize,
         ~height=fruitSize + 20,
@@ -75,17 +78,49 @@ let drawObjectList = (l, env) =>
     l,
   );
 
+let loadAssetMap = env =>
+  List.fold_left(
+    (assetMap, fruitName) => {
+      let assetMap =
+        AssetMap.add(
+          fruitName,
+          Draw.loadImage(
+            ~filename="./assets/" ++ fruitName ++ "_small.png",
+            env,
+          ),
+          assetMap,
+        );
+      let assetMap =
+        AssetMap.add(
+          fruitName ++ "_half_1",
+          Draw.loadImage(
+            ~filename="./assets/" ++ fruitName ++ "_half_1_small.png",
+            env,
+          ),
+          assetMap,
+        );
+      let assetMap =
+        AssetMap.add(
+          fruitName ++ "_half_2",
+          Draw.loadImage(
+            ~filename="./assets/" ++ fruitName ++ "_half_2_small.png",
+            env,
+          ),
+          assetMap,
+        );
+      assetMap;
+    },
+    AssetMap.empty,
+    possibleFruits,
+  );
+
 let setup = env => {
   Env.size(~width=600, ~height=600, env);
   spawnFruit({
     fruits: [],
     halves: [],
     bg: Draw.loadImage(~filename="./assets/background.png", env),
-    orange: Draw.loadImage(~filename="./assets/pineapple_small.png", env),
-    orangeHalf1:
-      Draw.loadImage(~filename="./assets/pineapple_half_1_small.png", env),
-    orangeHalf2:
-      Draw.loadImage(~filename="./assets/pineapple_half_2_small.png", env),
+    assetMap: loadAssetMap(env),
   });
 };
 
@@ -94,8 +129,8 @@ let draw = (state, env) => {
   let bottom = float_of_int(Env.height(env));
   Draw.background(Utils.color(~r=100, ~g=80, ~b=29, ~a=255), env);
   Draw.image(state.bg, ~pos=(0, 0), env);
-  drawObjectList(state.halves, env);
-  drawObjectList(state.fruits, env);
+  drawObjectList(state.halves, state.assetMap, env);
+  drawObjectList(state.fruits, state.assetMap, env);
 
   let state = Utils.random(~min=0, ~max=50) == 1 ? spawnFruit(state) : state;
 
@@ -123,7 +158,7 @@ let draw = (state, env) => {
   let newHalves =
     List.flatten(
       List.map(
-        ({x, y, r}) => [
+        ({x, y, r, kind}) => [
           {
             x,
             y: y +. 5.,
@@ -131,7 +166,7 @@ let draw = (state, env) => {
             vy: -. calcVY(r),
             r,
             vr: 0.,
-            img: state.orangeHalf1,
+            kind: kind ++ "_half_1",
           },
           {
             x,
@@ -140,7 +175,7 @@ let draw = (state, env) => {
             vy: calcVY(r),
             r,
             vr: 0.,
-            img: state.orangeHalf2,
+            kind: kind ++ "_half_2",
           },
         ],
         sliced,
@@ -152,8 +187,8 @@ let draw = (state, env) => {
   /* Remove old stuff */
   let state = {
     ...state,
-    fruits: List.filter(({y}) => y < bottom, state.fruits),
-    halves: List.filter(({y}) => y < bottom, state.halves),
+    fruits: List.filter(({y}) => y < bottom +. halfFruitf, state.fruits),
+    halves: List.filter(({y}) => y < bottom +. halfFruitf, state.halves),
   };
 
   state;
