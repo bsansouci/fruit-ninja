@@ -1,23 +1,12 @@
-Reprocessing Example
+Reason Dojo 3: Fruit Ninja
 ---
 
-Clone this repo to get started with [Reprocessing](https://github.com/schmavery/reprocessing).
-
-Demos are on other branches:
-
-- [Flappy Bird](https://github.com/bsansouci/reprocessing-example/tree/livestream-flappybird)
-- [2048](https://github.com/bsansouci/reprocessing-example/tree/2048)
-
-...and more on the [Reprocessing repo](https://github.com/schmavery/reprocessing#projects-using-reprocessing).
-
-## How to
-```
-git clone https://github.com/bsansouci/reprocessing-example.git
-```
+Reference project for our Reason Dojo 3.
 
 ### Install
 
 ```
+git clone https://github.com/bsansouci/fruit-ninja.git
 npm install
 ```
 
