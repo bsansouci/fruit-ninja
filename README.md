@@ -1,6 +1,9 @@
 Reason Dojo 3: Fruit Ninja
 ---
 
+![fruitninja](https://user-images.githubusercontent.com/4534692/46322453-d4786f00-c59d-11e8-9d0d-18bf0090c842.gif)
+
+
 Reference project for our Reason Dojo 3.
 
 ### Install
