@@ -1,16 +1,17 @@
 {
-  "name": "reprocessing-example",
+  "name": "FruitNinja",
   "sources": "src",
   "bs-dependencies": ["reprocessing"],
   "entries": [{
     "backend": "bytecode",
-    "main-module": "IndexHot"
+    "main-module": "IndexHot",
+    "ocaml-dependencies": ["dynlink"]
   },{
-    "backend": "native",
+    "backend": "ios",
     "main-module": "Index"
   },{
     "backend": "js",
     "main-module": "Index"
   }],
-  "refmt": 3,
+  "refmt": 3
 }

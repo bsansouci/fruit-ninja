@@ -1,17 +1,22 @@
 {
-  "name": "reprocessing-example",
+  "name": "FruitNinja",
   "scripts": {
     "start": "./lib/bs/bytecode/indexhot.byte",
     "start:native": "./lib/bs/native/index.native",
     "build": "bsb -make-world",
     "build:web": "bsb -make-world -backend js",
     "build:native": "bsb -make-world -backend native",
-    "clean": "bsb -clean-world"
+    "clean": "bsb -clean-world",
+    "deploy": "./node_modules/ios-deploy/build/Release/ios-deploy --bundle lib/bs/ios/App.app"
   },
   "dependencies": {
     "reprocessing": "0.2.0"
   },
   "devDependencies": {
     "bs-platform": "bsansouci/bsb-native#3.2.0"
-  }
+  },
+  "icon_2x": "./assets/appicon_2x.png",
+  "icon_3x": "./assets/appicon_3x.png",
+  "productName": "Fruit Ninja",
+  "productBundleIdentifier": "com.ben.fruitninja"
 }

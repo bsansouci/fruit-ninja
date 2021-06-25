@@ -25,12 +25,12 @@ type state = {
 
 let possibleFruits = ["banana", "pineapple", "apple", "coconut", "orange"];
 
-let spawnFruit = state => {
+let spawnFruit = (state, env) => {
   ...state,
   fruits: [
     {
-      x: Utils.randomf(~min=100., ~max=500.),
-      y: 600.,
+      x: Utils.randomf(~min=100., ~max=float_of_int(Env.width(env) - 100)),
+      y: float_of_int(Env.height(env)),
       r: 0.,
       vr: Utils.randomf(~min=-5., ~max=5.),
       vx: Utils.randomf(~min=-100., ~max=100.),
@@ -115,13 +115,15 @@ let loadAssetMap = env =>
   );
 
 let setup = env => {
-  Env.size(~width=600, ~height=600, env);
+  if (Reprocessing.target != "native-ios") {
+    Env.size(~width=600, ~height=600, env);
+  };
   spawnFruit({
     fruits: [],
     halves: [],
     bg: Draw.loadImage(~filename="./assets/background.png", env),
     assetMap: loadAssetMap(env),
-  });
+  }, env);
 };
 
 let draw = (state, env) => {
@@ -132,7 +134,7 @@ let draw = (state, env) => {
   drawObjectList(state.halves, state.assetMap, env);
   drawObjectList(state.fruits, state.assetMap, env);
 
-  let state = Utils.random(~min=0, ~max=50) == 1 ? spawnFruit(state) : state;
+  let state = Utils.random(~min=0, ~max=50) == 1 ? spawnFruit(state, env) : state;
 
   let state = {
     ...state,
@@ -141,9 +143,8 @@ let draw = (state, env) => {
   };
   let (mx, my) = Env.mouse(env);
   let mousef = (float_of_int(mx), float_of_int(my));
-  let halfFruitf = fruitSizef /. 2.;
   let halfFruitf = 0.;
-  let (sliced, unsliced) =
+  let (sliced, unsliced) = if (Env.mousePressed(env)) {
     List.partition(
       ({x, y}) =>
         Utils.distf(~p1=(x +. halfFruitf, y +. halfFruitf), ~p2=mousef)
@@ -151,6 +152,9 @@ let draw = (state, env) => {
         -. 20.,
       state.fruits,
     );
+  } else {
+    ([], state.fruits)
+  };
   let calcVY = r => {
     let vy = Utils.randomf(~min=100., ~max=300.);
     sin(r +. Constants.pi /. 2.) > 0. ? -. vy : vy;
@@ -158,26 +162,27 @@ let draw = (state, env) => {
   let newHalves =
     List.flatten(
       List.map(
-        ({x, y, r, kind}) => [
-          {
-            x,
-            y: y +. 5.,
-            vx: Utils.randomf(~min=-30., ~max=30.),
-            vy: -. calcVY(r),
-            r,
-            vr: 0.,
-            kind: kind ++ "_half_1",
-          },
-          {
-            x,
-            y: y -. 5.,
-            vx: Utils.randomf(~min=-30., ~max=50.),
-            vy: calcVY(r),
-            r,
-            vr: 0.,
-            kind: kind ++ "_half_2",
-          },
-        ],
+        ({x, y, r, kind}) =>
+          [
+            {
+              x,
+              y: y +. 5.,
+              vx: Utils.randomf(~min=-30., ~max=30.),
+              vy: -. calcVY(r),
+              r,
+              vr: 0.,
+              kind: kind ++ "_half_1",
+            },
+            {
+              x,
+              y: y -. 5.,
+              vx: Utils.randomf(~min=-30., ~max=50.),
+              vy: calcVY(r),
+              r,
+              vr: 0.,
+              kind: kind ++ "_half_2",
+            },
+          ],
         sliced,
       ),
     );
